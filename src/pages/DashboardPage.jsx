@@ -1,14 +1,19 @@
 import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { buscarUsuario } from '../services/githubService'
 
 function getGreeting() {
   const hour = new Date().getHours()
+
   if (hour >= 5 && hour < 12) return 'Bom dia'
   if (hour >= 12 && hour < 18) return 'Boa tarde'
+
   return 'Boa noite'
 }
 
 function getFormattedDate() {
   const now = new Date()
+
   return now.toLocaleDateString('pt-BR', {
     weekday: 'long',
     year: 'numeric',
@@ -43,6 +48,30 @@ const stats = [
 export default function DashboardPage() {
   const navigate = useNavigate()
 
+  const [usuario, setUsuario] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [busca] = useState('marcosmarcelinolima')
+
+  useEffect(() => {
+    async function carregarUsuario() {
+      try {
+        const dados = await buscarUsuario(busca)
+        setUsuario(dados)
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    carregarUsuario()
+  }, [busca])
+
+  if (loading) return <p>Carregando...</p>
+
+  if (error) return <p>Erro: {error}</p>
+
   return (
     <div className="dashboard">
       <header className="menu">
@@ -50,11 +79,16 @@ export default function DashboardPage() {
           <h1 className="menu__title">
             Academia <span>Portal do aluno</span>
           </h1>
+
           <nav className="menu__links">
             <span className="menu__item menu__item--active">Painel</span>
             <span className="menu__item">Disciplinas</span>
             <span className="menu__item">Tutor IA</span>
-            <span className="menu__item" onClick={() => navigate('/login')}>
+
+            <span
+              className="menu__item"
+              onClick={() => navigate('/login')}
+            >
               Sair
             </span>
           </nav>
@@ -63,13 +97,23 @@ export default function DashboardPage() {
 
       <div className="dashboard__container">
         <div className="welcome">
-          <h2>{getGreeting()}, João</h2>
+          <h2>{getGreeting()}, {usuario?.name}</h2>
+
           <p>{getFormattedDate()}</p>
+
           <p>
-            Bem-vindo de volta à sua sessão de estudos focado. Você tem 2 tarefas
-            para essa semana e está atualmente adiantado em seu cronograma de
-            leitura.
+            Bem-vindo de volta à sua sessão de estudos focado.
           </p>
+
+     {/*      <p>{usuario?.bio}</p> */}
+
+ {/*          <img
+            src={usuario?.avatar_url}
+            alt={usuario?.name}
+            width={200}
+          /> */}
+
+          <p>@{usuario?.login}</p>
         </div>
 
         <div className="card__group_cursos">
@@ -77,13 +121,23 @@ export default function DashboardPage() {
             <div className="card" key={curso.id}>
               <div className="card__body">
                 <span className="card__badge">{curso.badge}</span>
+
                 <h3 className="card__title">{curso.title}</h3>
-                <p className="card__description">{curso.description}</p>
+
+                <p className="card__description">
+                  {curso.description}
+                </p>
+
                 <div className="card__progress">
-                  <div style={{ width: `${curso.progress}%` }}>{curso.progress}%</div>
+                  <div style={{ width: `${curso.progress}%` }}>
+                    {curso.progress}%
+                  </div>
                 </div>
               </div>
-              <button className="card__button">Retomar estudo</button>
+
+              <button className="card__button">
+                Retomar estudo
+              </button>
             </div>
           ))}
         </div>
@@ -93,8 +147,12 @@ export default function DashboardPage() {
             <div className="card" key={i}>
               <div className="card__body">
                 <span className="card__badge">{s.badge}</span>
+
                 <h3 className="card__title">{s.value}</h3>
-                <p className="card__description">{s.description}</p>
+
+                <p className="card__description">
+                  {s.description}
+                </p>
               </div>
             </div>
           ))}
