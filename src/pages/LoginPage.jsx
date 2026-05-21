@@ -1,14 +1,17 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useUsuario } from '../context/UsuarioContext'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const { setUsuario } = useUsuario()
   const navigate = useNavigate()
 
   function handleSubmit(e) {
     e.preventDefault()
     // Navega para o dashboard ao clicar em Entrar
+    setUsuario({ email, password })
     navigate('/dashboard')
   }
 
@@ -27,12 +30,12 @@ export default function LoginPage() {
           <h1>Bem-vindo!</h1>
           <p>Por favor, insira suas credenciais para acessar seu painel acadêmico.</p>
 
-          <label htmlFor="email">Insira seu endereço de e-mail:</label>
+          <label htmlFor="username">Insira seu nome de usuário:</label>
           <input
-            type="email"
-            id="email"
-            name="email"
+            type="text"
+            name="username"
             value={email}
+            placeholder='Username:'
             onChange={e => setEmail(e.target.value)}
             required
           />
@@ -45,6 +48,7 @@ export default function LoginPage() {
             type="password"
             id="password"
             name="password"
+            placeholder='Senha:'
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
